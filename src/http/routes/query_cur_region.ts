@@ -1,18 +1,25 @@
 import { Request, Response } from 'express';
 import Config from '../../utils/Config';
 import { QueryCurrRegionHttpRsp, RegionInfo, StopServerInfo } from '../../data/proto/web';
-import { Ec2bKey, encryptAndSign } from '../../crypto';
+import { Ec2bKey, RSAUtils } from '../../crypto';
 import Logger from '../../utils/Logger';
-import { Retcode } from '../../data/proto/ret';
 
 const c = new Logger('Dispatch', 'blue');
 
 const ec2b = new Ec2bKey();
 
 export default async function handle(req: Request, res: Response) {
+  const key = req.query.key_id
+
+  if(!key){
+    return; // no legacy support
+  }
+
+  c.debug(`Client Key: ${key}`)
+
   if (Config.GAMESERVER.MAINTENANCE) {
     const maintenance = QueryCurrRegionHttpRsp.fromPartial({
-      retcode: Retcode.RET_STOP_SERVER,
+      retcode: 11,
       msg: "MoonlightTS",
       regionInfo: RegionInfo.fromPartial({}),
       stopServer: StopServerInfo.fromPartial({
@@ -22,7 +29,7 @@ export default async function handle(req: Request, res: Response) {
         contentMsg: Config.GAMESERVER.MAINTENANCE_MSG
       })
     });
-    res.send(encryptAndSign(QueryCurrRegionHttpRsp.encode(maintenance).finish()))
+    res.send(RSAUtils.encryptAndSign(QueryCurrRegionHttpRsp.encode(maintenance).finish(), key.toString()))
     return;
   }
 
@@ -50,5 +57,5 @@ export default async function handle(req: Request, res: Response) {
     ),
   });
 
-  res.send(encryptAndSign(QueryCurrRegionHttpRsp.encode(dataObj).finish()))
+  res.send(RSAUtils.encryptAndSign(QueryCurrRegionHttpRsp.encode(dataObj).finish(), key.toString()))
 }

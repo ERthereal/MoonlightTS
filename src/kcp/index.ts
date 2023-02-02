@@ -20,7 +20,7 @@ import ProtoFactory, { MessageType } from '../utils/ProtoFactory';
 
 const c = new Logger('KCP', 'red');
 
-type UnWrapMessageType<T> = T extends MessageType<infer U> ? U : T;
+
 
 let clientSequence = 10;
 

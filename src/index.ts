@@ -13,10 +13,12 @@ import ProtoFactory from './utils/ProtoFactory';
 import { FightProperty } from './game/managers/constants/FightProperties';
 import { ConfigManager } from './game/managers/ConfigManager';
 import { EntityProperty } from './game/managers/constants/EntityProperties';
+import { RSAUtils } from './crypto';
 
 const c = new Logger('MoonlightTS');
 c.log('Starting MoonlightTS...');
 
+RSAUtils.initKeys();
 ConfigManager.init();
 
 HttpServer.getInstance().start();
